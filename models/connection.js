@@ -9,6 +9,5 @@ const connectDB = ()=>{
         
     }).then(() => console.log("Database connected!"))
     .catch(err => console.log(err));
-    console.log("hello");
 }
 module.exports = connectDB;

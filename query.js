@@ -24,15 +24,14 @@ for(let i=0; i<1; i++){
 const init= async (CONTRACT_ACCOUNT, Transection_Hash)=>{
     const contract = new web3.eth.Contract(erc721.abi, CONTRACT_ACCOUNT);
 
-// here we find the first and last(latest) BlockNumber
-
+    // here we find the first and last(latest) BlockNumber
     let first =await web3.eth.getTransactionReceipt(Transection_Hash);
     let firstBlock = first.blockNumber;
     let latestBlock = await web3.eth.getBlockNumber();
 
-    totalResults = latestBlock-firstBlock;
-    //console.log(totalResults);
+    totalResults = latestBlock-firstBlock; // this is the total results obtained
     
+    //here we divided the totalResults into patches
     let start = firstBlock;
     let from ,to;
     if(totalResults >10000){
@@ -41,18 +40,15 @@ const init= async (CONTRACT_ACCOUNT, Transection_Hash)=>{
             to = start + 10000;
             holderEvents(from ,to, contract);
             totalResults =totalResults-10000;
-            //console.log(totalResults);
             start = to;
         }
         if (totalResults!=0){
             from = start;
             to = start+ totalResults;
-            //console.log('hello');
             holderEvents(from,to, contract);
         }
     }
     else{
-        //console.log('hello');
         holderEvents(from,to, contract );
     }
  };
@@ -66,7 +62,6 @@ const holderEvents = async(from ,to,contract ) =>{
         Holders.push(AllPastEvents[i].returnValues._to);
      }
      let uniqueHolders = Array.from(new Set(Holders));
-     //console.log(uniqueHolders);
 
      for (let i=0; i< Holders.length; i++){
         
@@ -85,9 +80,7 @@ const holderEvents = async(from ,to,contract ) =>{
             }
             catch(error){
                 console.log(error);
-            }
-                             
-                       
+            }                                          
     }
 }
     catch(error){
