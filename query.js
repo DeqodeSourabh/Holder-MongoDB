@@ -8,7 +8,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io
 const erc721 = require("@0xcert/ethereum-erc721/build/erc721.json").ERC721;
 
 const connectDB = require('./models/connection');
-//connectDB();
+connectDB();
 
 function ContractDetails (){
 for(let i=0; i<1; i++){
