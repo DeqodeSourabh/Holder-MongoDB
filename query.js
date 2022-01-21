@@ -8,32 +8,28 @@ const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io
 const erc721 = require("@0xcert/ethereum-erc721/build/erc721.json").ERC721;
 
 const connectDB = require('./models/connection');
+Holders=[]
 connectDB();
 
 function ContractDetails (){
-for(let i=0; i<3; i++){
-    
-    const CONTRACT_ACCOUNT = addressNFT.NFTHolders[i].address;
-    const Transection_Hash = addressNFT.NFTHolders[i].transectionHash;
-    init(CONTRACT_ACCOUNT, Transection_Hash)
-    //console.log(ACCOUNT);
-
-}
+    for(let i=0; i<6; i++){
+        const CONTRACT_ACCOUNT = addressNFT.NFTHolders[i].address;
+        const Transection_Hash = addressNFT.NFTHolders[i].transectionHash;
+        init(CONTRACT_ACCOUNT, Transection_Hash)
+        //console.log(ACCOUNT);
+    }
 }
 
 const init= async (CONTRACT_ACCOUNT, Transection_Hash)=>{
     const contract = new web3.eth.Contract(erc721.abi, CONTRACT_ACCOUNT);
-
-    // here we find the first and last(latest) BlockNumber
-    let first =await web3.eth.getTransactionReceipt(Transection_Hash);
     
+    let first =await web3.eth.getTransactionReceipt(Transection_Hash); // here we find the first and last(latest) BlockNumber
     let firstBlock = first.blockNumber;
     let latestBlock = await web3.eth.getBlockNumber();
 
     totalResults = latestBlock-firstBlock; // this is the total results obtained
     
-    //here we divided the totalResults into patches
-    let start = firstBlock;
+    let start = firstBlock; //here we divided the totalResults into patches
     let from ,to;
     if(totalResults >10000){
         while( totalResults>= 10000){
@@ -52,27 +48,24 @@ const init= async (CONTRACT_ACCOUNT, Transection_Hash)=>{
     else{
         holderEvents(from,to, contract );
     }
- };
-Holders=[]
+};
+
 const holderEvents = async(from ,to,contract ) =>{
-    //console.log(from,to);
     try{
-    const AllPastEvents = await contract.getPastEvents('Transfer',{fromBlock: from, toBlock: to});
+        const AllPastEvents = await contract.getPastEvents('Transfer',{fromBlock: from, toBlock: to});
+        for (let i=0; i<AllPastEvents.length;i++){
+            Holders.push(AllPastEvents[i].returnValues._to);
+        }
+        let uniqueHolders = Array.from(new Set(Holders));
 
-    for (let i=0; i<AllPastEvents.length;i++){
-        Holders.push(AllPastEvents[i].returnValues._to);
-     }
-     let uniqueHolders = Array.from(new Set(Holders));
-
-
-     for (let i=0; i< uniqueHolders.length; i++){
-                balance =await web3.eth.getBalance(uniqueHolders[i])
-                if (balance != 0){
-                    let userModel = new User({
-                        HolderAddress: uniqueHolders[i],
+        for (let i=0; i< uniqueHolders.length; i++){
+            balance =await web3.eth.getBalance(uniqueHolders[i])
+            if (balance != 0){
+                let userModel = new User({
+                    HolderAddress: uniqueHolders[i],
                     });
-                    console.log(balance);
-                    try{
+                console.log(balance);
+                try{
                     userModel.save()         
                      .then(() => {            
                     console.log('inserted');
@@ -84,17 +77,14 @@ const holderEvents = async(from ,to,contract ) =>{
                 catch(error){
                     console.log(error);
                 }   
-                }
-                else{
-                    continue;
-                }                                           
+            }
+            else{
+                continue;
+            }                                           
         }   
-
-}
+    }
     catch(error){
         console.log(error);
     } 
-     //console.log(Holders);
-
 }
 ContractDetails();
