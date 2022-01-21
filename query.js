@@ -11,7 +11,7 @@ const connectDB = require('./models/connection');
 connectDB();
 
 function ContractDetails (){
-for(let i=0; i<1; i++){
+for(let i=0; i<3; i++){
     
     const CONTRACT_ACCOUNT = addressNFT.NFTHolders[i].address;
     const Transection_Hash = addressNFT.NFTHolders[i].transectionHash;
@@ -26,6 +26,7 @@ const init= async (CONTRACT_ACCOUNT, Transection_Hash)=>{
 
     // here we find the first and last(latest) BlockNumber
     let first =await web3.eth.getTransactionReceipt(Transection_Hash);
+    
     let firstBlock = first.blockNumber;
     let latestBlock = await web3.eth.getBlockNumber();
 
@@ -63,25 +64,32 @@ const holderEvents = async(from ,to,contract ) =>{
      }
      let uniqueHolders = Array.from(new Set(Holders));
 
-     for (let i=0; i< Holders.length; i++){
-        
-                let userModel = new User({
-                    HolderAddress: uniqueHolders[i],
-                });
-                console.log(userModel);
-                try{
-                userModel.save()         
-                 .then(() => {            
-                console.log('inserted');
-                })
-                .catch((err) => {        
-                     console.log(err);
-                 });
-            }
-            catch(error){
-                console.log(error);
-            }                                          
-    }
+
+     for (let i=0; i< uniqueHolders.length; i++){
+                balance =await web3.eth.getBalance(uniqueHolders[i])
+                if (balance != 0){
+                    let userModel = new User({
+                        HolderAddress: uniqueHolders[i],
+                    });
+                    console.log(balance);
+                    try{
+                    userModel.save()         
+                     .then(() => {            
+                    console.log('inserted');
+                    })
+                    .catch((err) => {        
+                         console.log(err);
+                     });
+                }
+                catch(error){
+                    console.log(error);
+                }   
+                }
+                else{
+                    continue;
+                }                                           
+        }   
+
 }
     catch(error){
         console.log(error);
