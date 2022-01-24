@@ -49,8 +49,7 @@ const init= async (CONTRACT_ACCOUNT, Transection_Hash)=>{
     }
 };
 
-reciever=[]
-sender= [];
+reciever=[];
 reciever_sender = [];
 totalHolders = []
 const holderEvents = async(from ,to,contract ) =>{
@@ -58,16 +57,10 @@ const holderEvents = async(from ,to,contract ) =>{
         const AllPastEvents = await contract.getPastEvents('Transfer',{fromBlock: from, toBlock: to});
         for (let i=0; i<AllPastEvents.length;i++){
             reciever.push(AllPastEvents[i].returnValues._to);
-            sender.push(AllPastEvents[i].returnValues._from);
+            
         }
-        
         reciever = Array.from(new Set(reciever)); // remove the Duplicate address
-        sender = Array.from(new Set(sender));
-         
         for (let i of reciever){
-            reciever_sender.push(i);
-        }
-        for (let i of sender){
             reciever_sender.push(i);
         }
 
