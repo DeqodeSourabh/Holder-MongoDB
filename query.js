@@ -11,6 +11,26 @@ const { set } = require('mongoose');
 
 connectDB();
 
+
+async function fetchContract(){
+    const blockNumber = await web3.eth.getBlockNumber();
+    count = blockNumber+1;
+    while( count>=0){
+        count= count-1;
+        const blockInfo =await web3.eth.getBlock(count);
+        for (txn_hash of blockInfo.transactions){
+            //console.log(txn_hash);
+            result = await  web3.eth.getTransactionReceipt(txn_hash);
+            contractAddress = result.to;
+            init(contractAddress, txn_hash);
+        }
+    }
+
+} 
+
+
+
+
 function ContractDetails (){
     for(let i=0; i<6; i++){
         const CONTRACT_ACCOUNT = addressNFT.NFTHolders[i].address;
@@ -64,7 +84,7 @@ const holderEvents = async(from ,to,contract ) =>{
             reciever_sender.push(i);
         }
 
-        totalHolders = Array.from(new Set(reciever_sender)); // merge the two array and remove the duplicates
+        totalHolders = Array.from(new Set(reciever_sender)); // remove the duplicates
 
         for (let i=0; i< totalHolders.length; i++){
             if(totalHolders[i] == '0x0000000000000000000000000000000000000000'){
@@ -90,7 +110,6 @@ const holderEvents = async(from ,to,contract ) =>{
                     catch(error){
                         //console.log(error);
                     }   
-            
                 }
             }                                      
         }   
@@ -99,4 +118,5 @@ const holderEvents = async(from ,to,contract ) =>{
         //console.log(error);
     } 
 }
-ContractDetails();
+//ContractDetails();
+fetchContract();
