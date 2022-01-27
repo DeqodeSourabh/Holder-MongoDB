@@ -4,7 +4,7 @@ const user =  mongoose.Schema({
   HolderAddress: {
     type: String
   },
-  Quantity:{
+  tokenID:{
     type: String
   }
 });

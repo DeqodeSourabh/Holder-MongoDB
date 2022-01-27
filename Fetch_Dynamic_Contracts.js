@@ -6,6 +6,7 @@ const erc721 = require("@0xcert/ethereum-erc721/build/erc721.json").ERC721;
 const connectDB = require('./models/connection');
 const User = require('./models/user');
 connectDB();
+
 class HoldersOfNft{
     
 //---------------------Get Past Events for the contracts-----------------------
@@ -20,10 +21,10 @@ class HoldersOfNft{
                     continue;
                 }
                 else{
-                   let quantity=BigInt(web3.utils.hexToNumber(events[i].raw.topics[3]))
+                   let tokenID=BigInt(web3.utils.hexToNumber(events[i].raw.topics[3]))
                     let userModel = new User({
                         HolderAddress: toAddress,
-                        Quantity: quantity
+                        tokenID: tokenID
                         });
                     try{
                         userModel.save()         
