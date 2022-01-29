@@ -10,38 +10,57 @@ connectDB();
 class HoldersOfNft{
     
 //---------------------Get Past Events for the contracts-----------------------
-    async  PastEvents(from, to,contract){
-        const events =await contract.getPastEvents('Transfer', {fromBlock: from, toBlock: to})
+    async  PastEvents(from, to,contract, CONTRACT_ACCOUNT , Transection_Hash){
+        
+        var reciever =[]
+        var reciever_sender =[]
+        var totalHolders =[]
+        const AllPastEvents =await contract.getPastEvents('Transfer', {fromBlock: from, toBlock: to})
         //console.log(web3.utils.hexToNumber(events[2].raw.topics[2]));
+        try{
+            for (let i=0; i<AllPastEvents.length;i++){
+                reciever.push(AllPastEvents[i].returnValues._to);  
+            }
+            reciever = Array.from(new Set(reciever)); // remove the Duplicate address
+            for (let i of reciever){
+                reciever_sender.push(i);
+            }
 
-        for (let i=0; i<events.length;i++){
-            if (events[i].raw.topics.length == 4){
-                let toAddress = web3.utils.hexToNumberString(events[i].raw.topics[2]);
-                if(web3.utils.hexToNumber(toAddress == "0x0000000000000000000000000000000000000000")){
+            totalHolders = Array.from(new Set(reciever_sender)); // remove the duplicates
+
+            for (let i=0; i< totalHolders.length; i++){
+                if(totalHolders[i] == '0x0000000000000000000000000000000000000000'){
                     continue;
                 }
-                else{
-                   let tokenID=BigInt(web3.utils.hexToNumber(events[i].raw.topics[3]))
-                    let userModel = new User({
-                        HolderAddress: toAddress,
-                        tokenID: tokenID
-                        });
-                    try{
-                        userModel.save()         
+                else{    
+                    const tokenBalance = await contract.methods.balanceOf(totalHolders[i]).call(); // find the balance of the tokens of that contract.
+                    if (tokenBalance != 0){
+
+                        let userModel = new User({
+                            HolderAddress: totalHolders[i],
+                            tokenID: AllPastEvents[i].returnValues._tokenId,
+                            contractAddress: CONTRACT_ACCOUNT,
+                            Transection_Hash: Transection_Hash
+
+                            });
+                        try{
+                            userModel.save()         
                             .then(() => {            
-                        console.log('inserted');
-                        })
-                        .catch((err) => {        
+                            console.log('inserted');
+                            })
+                            .catch((err) => {        
                                 //console.log(err);
                             });
+                        }
+                        catch(error){
+                            //console.log(error);
+                        }   
                     }
-                    catch(error){
-                        //console.log(error);
-                    }   
-
-                }
+                }                                      
             }
-        }   
+        }
+        catch(error){
+        }
     }
 
     //---------------------------******---------------------------------
@@ -63,18 +82,18 @@ class HoldersOfNft{
             while( totalResults>= 10000){
                 from = start;
                 to = start + 10000;
-                this.PastEvents(from ,to, contract);
+                this.PastEvents(from ,to, contract, CONTRACT_ACCOUNT , Transection_Hash);
                 totalResults =totalResults-10000;
                 start = to;
             }
             if (totalResults!=0){
                 from = start;
                 to = start+ totalResults;
-                this.PastEvents(from,to, contract);
+                this.PastEvents(from,to, contract, CONTRACT_ACCOUNT , Transection_Hash);
             }
         }
         else{
-            this.PastEvents(from,to, contract );
+            this.PastEvents(from,to, contract, CONTRACT_ACCOUNT, Transection_Hash);
         }
     }
 
@@ -91,11 +110,13 @@ class HoldersOfNft{
                 //console.log(txn_hash);
                 let result = await  web3.eth.getTransactionReceipt(txn_hash);
                 let contractAddress = result.to;
-                //if (contractAddress is in DB){
-                //    query for checking in DB
-                //}
-                //else{ PastEvents(contractAddress)}
-                this.init(contractAddress,txn_hash);
+                let getContract = await User.findOne({ contractAddress: contractAddress }).exec(); //check if contractAddress is already present in Db or not
+                if (getContract == null){
+                    if (contractAddress!= "null"){
+                    this.init(contractAddress,txn_hash);
+                    }
+
+                }
             }
         }
     } 

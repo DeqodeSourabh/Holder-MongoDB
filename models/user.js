@@ -6,6 +6,12 @@ const user =  mongoose.Schema({
   },
   tokenID:{
     type: String
+  },
+  contractAddress:{
+    type: String
+  },
+  Transection_Hash:{
+    type: String
   }
 });
-module.exports = mongoose.model('users3',user);
+module.exports= User = mongoose.model('users6',user);

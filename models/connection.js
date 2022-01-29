@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const URI ="mongodb+srv://office:sourabh@cluster0.il3sa.mongodb.net/newCollection?retryWrites=true&w=majority";
+const URI ="mongodb+srv://office:sourabh@cluster0.il3sa.mongodb.net/learnMongo?retryWrites=true&w=majority";
 
 const connectDB = ()=>{
         mongoose.connect(URI,{
